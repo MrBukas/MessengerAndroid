@@ -6,9 +6,6 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
@@ -16,8 +13,13 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
@@ -35,6 +37,8 @@ public class Chat extends AppCompatActivity {
     static String talkerName;
     static ArrayAdapter<String> arrayAdapter;
     static ListView listViewMessage;
+    static List<MessageFromDatabase> messagesList;
+    static CustomMessageAdapter cma;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,19 +50,36 @@ public class Chat extends AppCompatActivity {
         final String username = i.getStringExtra("username");
         final String password = i.getStringExtra("password");
         talkerName = i.getStringExtra("talkerName");
-        new AsyncCaller(username,password).execute();
+        messagesList = new ArrayList<>();
+        new AsyncGetDialog(username,password).execute();
 
         listViewMessage = findViewById(R.id.listViewMessage);
 
+        EditText editTextMsg = findViewById(R.id.editTextMsg);
+        Button buttonSend = findViewById(R.id.buttonSendMsg);
+        buttonSend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
+
     }
-    class AsyncCaller extends AsyncTask<Void, Void, Void>
+    class AsyncSendMessage extends AsyncTask<Void, Void, Void>{
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            return null;
+        }
+    }
+    class AsyncGetDialog extends AsyncTask<Void, Void, Void>
     {
         String username;
         String password;
 
 
 
-        public AsyncCaller(String username, String password) {
+        public AsyncGetDialog(String username, String password) {
             this.username = username;
             this.password = password;
             //makeToast(username+password);
@@ -98,9 +119,27 @@ public class Chat extends AppCompatActivity {
                 int auth = Integer.parseInt(scanner.nextLine());//Сообщает о результате авторизации
                 printWriter.println("dialog");
                 printWriter.println(talkerName);
-                List<String> messagesList = new ArrayList<>();
                 String msg;
+                int user_id = Integer.parseInt(scanner.nextLine());
+                msg = scanner.nextLine();
+                //boolean sentByUser = scanner.nextLine().equals("true");
                 do {
+                    boolean sentByUser = Integer.parseInt(scanner.nextLine()) == user_id;
+                    messagesList.add(new MessageFromDatabase(msg,sentByUser));
+                    msg = scanner.nextLine();
+
+                    System.out.println("liNe GoTt");
+                }while (!msg.equals("endl"));
+                System.out.println(messagesList.size());
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        cma = new CustomMessageAdapter();
+                        listViewMessage.setAdapter(cma);
+                    }
+                });
+                //Старый способ получения сообщений
+                /*do {
                     msg = scanner.nextLine();
                     messagesList.add(msg);
                 }while (!msg.equals("endl"));
@@ -117,14 +156,57 @@ public class Chat extends AppCompatActivity {
                         listViewMessage.setAdapter(arrayAdapter);
 
                     }
-                });
+                });*/
 
-
+                return null;
             } catch (IOException e) {
                 e.printStackTrace();
             }
             return null;
         }
     }
+    class CustomMessageAdapter extends BaseAdapter{
+
+        @Override
+        public int getCount() {
+            return messagesList.size();
+        }
+
+        @Override
+        public Object getItem(int i) {
+            return null;
+        }
+
+        @Override
+        public long getItemId(int i) {
+            return 0;
+        }
+
+        @Override
+        public View getView(int i, View view, ViewGroup viewGroup) {
+            view = getLayoutInflater().inflate(R.layout.custom_message_adapter_layout,null);
+            TextView messageTextUser = view.findViewById(R.id.messageUserTextView);
+            TextView messageTextTalker = view.findViewById(R.id.messageTalkerTextView);
+            if (messagesList.get(i).sentByUser){
+                messageTextUser.setText(messagesList.get(i).text);
+                messageTextTalker.setText("");
+            }else {
+                messageTextUser.setText("");
+                messageTextTalker.setText(messagesList.get(i).text);
+            }
+            return view;
+        }
+    }
+    class MessageFromDatabase{
+        String text;
+        boolean sentByUser;
+        public MessageFromDatabase(String text, boolean sentByUser) {
+            this.text = text;
+            this.sentByUser = sentByUser;
+        }
+
+
+    }
 
 }
+
