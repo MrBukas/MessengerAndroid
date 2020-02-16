@@ -19,6 +19,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Space;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,6 +34,10 @@ import java.util.Scanner;
 
 public class Chat extends AppCompatActivity {
     private static Socket socket;
+    static PrintWriter printWriter;
+    static InputStreamReader inputStreamReader;
+    static BufferedReader bufferedReader;
+    static Scanner scanner;
     static String[] messages;
     static String talkerName;
     static ArrayAdapter<String> arrayAdapter;
@@ -55,20 +60,41 @@ public class Chat extends AppCompatActivity {
 
         listViewMessage = findViewById(R.id.listViewMessage);
 
-        EditText editTextMsg = findViewById(R.id.editTextMsg);
+        final EditText editTextMsg = findViewById(R.id.editTextMsg);
         Button buttonSend = findViewById(R.id.buttonSendMsg);
+
         buttonSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                new AsyncSendMessage(editTextMsg.getText().toString()).execute();
+                editTextMsg.setText("");
             }
         });
 
     }
+
+
+
     class AsyncSendMessage extends AsyncTask<Void, Void, Void>{
+        String msg;
+        public AsyncSendMessage(String msg) {
+            this.msg = msg;
+        }
 
         @Override
         protected Void doInBackground(Void... voids) {
+            printWriter.println("message");
+            printWriter.println(talkerName);
+            printWriter.println(msg);
+            messagesList.add(new MessageFromDatabase(msg,true));
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    cma = new CustomMessageAdapter();
+                    listViewMessage.setAdapter(cma);
+                    scrollListViewToBottom();
+                }
+            });
             return null;
         }
     }
@@ -110,10 +136,10 @@ public class Chat extends AppCompatActivity {
         protected Void doInBackground(Void... voids)  {
             try {
                 socket = new Socket("176.214.187.245",5679);
-                PrintWriter printWriter = new PrintWriter(socket.getOutputStream(),true);
-                InputStreamReader inputStreamReader = new InputStreamReader(socket.getInputStream());
-                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-                Scanner scanner = new Scanner(bufferedReader);
+                printWriter = new PrintWriter(socket.getOutputStream(),true);
+                inputStreamReader = new InputStreamReader(socket.getInputStream());
+                bufferedReader = new BufferedReader(inputStreamReader);
+                scanner = new Scanner(bufferedReader);
                 printWriter.println(username);
                 printWriter.println((password));
                 int auth = Integer.parseInt(scanner.nextLine());//Сообщает о результате авторизации
@@ -122,7 +148,7 @@ public class Chat extends AppCompatActivity {
                 String msg;
                 int user_id = Integer.parseInt(scanner.nextLine());
                 msg = scanner.nextLine();
-                //boolean sentByUser = scanner.nextLine().equals("true");
+                if (!msg.equals("endl"))
                 do {
                     boolean sentByUser = Integer.parseInt(scanner.nextLine()) == user_id;
                     messagesList.add(new MessageFromDatabase(msg,sentByUser));
@@ -136,6 +162,7 @@ public class Chat extends AppCompatActivity {
                     public void run() {
                         cma = new CustomMessageAdapter();
                         listViewMessage.setAdapter(cma);
+                        scrollListViewToBottom();
                     }
                 });
                 //Старый способ получения сообщений
@@ -206,6 +233,15 @@ public class Chat extends AppCompatActivity {
         }
 
 
+    }
+    private void scrollListViewToBottom() {
+        listViewMessage.post(new Runnable() {
+            @Override
+            public void run() {
+                // Select the last row so it will scroll into view...
+                listViewMessage.setSelection(cma.getCount() - 1);
+            }
+        });
     }
 
 }

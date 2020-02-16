@@ -13,6 +13,7 @@
             android:name=".Chat"
             android:label="@string/title_activity_chat"
             android:parentActivityName=".FrontPage"
+            android:windowSoftInputMode="adjustPan"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

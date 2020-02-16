@@ -1,6 +1,7 @@
 package com.bukas.messenger;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -9,6 +10,7 @@ import android.os.Bundle;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
@@ -18,6 +20,8 @@ import android.os.Message;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -41,6 +45,17 @@ public class FrontPage extends AppCompatActivity {
     static String[] usernames;
     static ListView listView;
     static ArrayAdapter<String> arrayAdapter;
+    static String talkerName;
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Intent i = getIntent();
+        final String username = i.getStringExtra("username");
+        final String password = i.getStringExtra("password");
+        new AsyncCaller(username,password).execute();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,6 +79,41 @@ public class FrontPage extends AppCompatActivity {
                 intent.putExtra("password",password);
                 intent.putExtra("talkerName",usernames[i]);
                 startActivity(intent);
+            }
+        });
+        Button buttonNewTalker = findViewById(R.id.buttonNewTalker);
+
+        AlertDialog.Builder adBuilder = new AlertDialog.Builder(this);
+        adBuilder.setTitle("New Dialog");
+        adBuilder.setMessage("Enter username");
+        final EditText input = new EditText(this);
+        adBuilder.setView(input);
+        adBuilder.setPositiveButton("Submit", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                talkerName = input.getText().toString();
+                Intent intent = new Intent(FrontPage.this,Chat.class);
+                intent.putExtra("username",username);
+                intent.putExtra("password",password);
+                intent.putExtra("talkerName",talkerName);
+                startActivity(intent);
+            }
+        });
+        adBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+            }
+        });
+
+        final AlertDialog ad = adBuilder.create();
+
+
+        buttonNewTalker.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ad.show();
+
             }
         });
 
