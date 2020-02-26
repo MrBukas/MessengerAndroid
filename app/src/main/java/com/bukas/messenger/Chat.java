@@ -135,7 +135,7 @@ public class Chat extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... voids)  {
             try {
-                socket = new Socket("176.214.187.245",5679);
+                socket = new Socket(getResources().getString(R.string.server_ip),5679);
                 printWriter = new PrintWriter(socket.getOutputStream(),true);
                 inputStreamReader = new InputStreamReader(socket.getInputStream());
                 bufferedReader = new BufferedReader(inputStreamReader);

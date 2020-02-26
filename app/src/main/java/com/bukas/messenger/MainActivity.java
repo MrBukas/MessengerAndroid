@@ -155,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... voids)  {
             try {
-                socket = new Socket("176.214.187.245",5679);
+                socket = new Socket(getResources().getString(R.string.server_ip),5679);
                 PrintWriter printWriter = new PrintWriter(socket.getOutputStream(),true);
                 InputStreamReader inputStreamReader = new InputStreamReader(socket.getInputStream());
                 BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
