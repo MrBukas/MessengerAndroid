@@ -4,5 +4,6 @@
     <string name="preference_file_key">preference_file_key</string>
     <string name="title_activity_front_page">FrontPage</string>
     <string name="title_activity_chat">Chat</string>
-    <string name="server_ip">193.33.230.246</string>
+    <string name="server_ip">176.214.188.195</string>
+    <string name="title_activity_registration">Registration</string>
 </resources>

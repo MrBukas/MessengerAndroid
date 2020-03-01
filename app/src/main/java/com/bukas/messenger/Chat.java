@@ -3,6 +3,7 @@ package com.bukas.messenger;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
@@ -19,9 +20,10 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Space;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.material.appbar.AppBarLayout;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -50,12 +52,17 @@ public class Chat extends AppCompatActivity {
         setContentView(R.layout.activity_chat);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         Intent i = getIntent();
         final String username = i.getStringExtra("username");
         final String password = i.getStringExtra("password");
         talkerName = i.getStringExtra("talkerName");
+        getSupportActionBar().setTitle(talkerName);
         messagesList = new ArrayList<>();
+
+
+
+
         new AsyncGetDialog(username,password).execute();
 
         listViewMessage = findViewById(R.id.listViewMessage);

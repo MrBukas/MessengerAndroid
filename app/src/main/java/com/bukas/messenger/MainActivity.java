@@ -12,13 +12,11 @@ import androidx.appcompat.widget.Toolbar;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.text.Editable;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
@@ -27,7 +25,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.math.BigInteger;
-import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -48,7 +45,8 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        Button button_login  = (Button) findViewById(R.id.button_login);
+        Button button_login  = findViewById(R.id.button_login);
+        Button button_register = findViewById(R.id.button_register);
         final EditText edittext_username = findViewById(R.id.editText_username);
         final EditText edittext_pass = findViewById(R.id.editText_password);
         List<String> username_password = loadData();
@@ -62,12 +60,19 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-       button_login.setOnClickListener(new View.OnClickListener() {
+        button_login.setOnClickListener(new View.OnClickListener() {
            @Override
            public void onClick(View view) {
                login(edittext_username.getText().toString(),edittext_pass.getText().toString());
            }
-       });
+        });
+
+        button_register.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(MainActivity.this, Registration.class));
+            }
+        });
 
 
     }
@@ -116,9 +121,6 @@ public class MainActivity extends AppCompatActivity {
             this.username = username;
             this.password = password;
         }
-        void makeToast(String s){
-            Toast.makeText(getApplicationContext(),s,Toast.LENGTH_SHORT).show();
-        }
         Handler toastHandler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message message) {
@@ -158,7 +160,7 @@ public class MainActivity extends AppCompatActivity {
                 socket = new Socket(getResources().getString(R.string.server_ip),5679);
                 PrintWriter printWriter = new PrintWriter(socket.getOutputStream(),true);
                 InputStreamReader inputStreamReader = new InputStreamReader(socket.getInputStream());
-                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                    BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
                 Scanner scanner = new Scanner(bufferedReader);
                 printWriter.println(username);
                 printWriter.println(hashPassword(password));
