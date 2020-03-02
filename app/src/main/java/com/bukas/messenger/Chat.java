@@ -39,7 +39,7 @@ public class Chat extends AppCompatActivity {
     static PrintWriter printWriter;
     static InputStreamReader inputStreamReader;
     static BufferedReader bufferedReader;
-    static Scanner scanner;
+    //static Scanner scanner;
     static String[] messages;
     static String talkerName;
     static ArrayAdapter<String> arrayAdapter;
@@ -90,9 +90,9 @@ public class Chat extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            printWriter.println("message");
-            printWriter.println(talkerName);
-            printWriter.println(msg);
+           User.write("message");
+           User.write(talkerName);
+           User.write(msg);
             messagesList.add(new MessageFromDatabase(msg,true));
             runOnUiThread(new Runnable() {
                 @Override
@@ -141,25 +141,25 @@ public class Chat extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Void... voids)  {
-            try {
-                socket = new Socket(getResources().getString(R.string.server_ip),5679);
-                printWriter = new PrintWriter(socket.getOutputStream(),true);
-                inputStreamReader = new InputStreamReader(socket.getInputStream());
-                bufferedReader = new BufferedReader(inputStreamReader);
-                scanner = new Scanner(bufferedReader);
-                printWriter.println(username);
-                printWriter.println((password));
-                int auth = Integer.parseInt(scanner.nextLine());//Сообщает о результате авторизации
-                printWriter.println("dialog");
-                printWriter.println(talkerName);
+
+//                socket = new Socket(getResources().getString(R.string.server_ip),5679);
+//                printWriter = new PrintWriter(socket.getOutputStream(),true);
+//                inputStreamReader = new InputStreamReader(socket.getInputStream());
+//                bufferedReader = new BufferedReader(inputStreamReader);
+//                scanner = new Scanner(bufferedReader);
+//                printWriter.println(username);
+//                printWriter.println((password));
+                //int auth = Integer.parseInt(User.read());//Сообщает о результате авторизации
+                User.write("dialog");
+                User.write(talkerName);
                 String msg;
-                int user_id = Integer.parseInt(scanner.nextLine());
-                msg = scanner.nextLine();
+                int user_id = Integer.parseInt(User.read());
+                msg = User.read();
                 if (!msg.equals("endl"))
                 do {
-                    boolean sentByUser = Integer.parseInt(scanner.nextLine()) == user_id;
+                    boolean sentByUser = Integer.parseInt(User.read()) == user_id;
                     messagesList.add(new MessageFromDatabase(msg,sentByUser));
-                    msg = scanner.nextLine();
+                    msg = User.read();
 
                     System.out.println("liNe GoTt");
                 }while (!msg.equals("endl"));
@@ -193,10 +193,8 @@ public class Chat extends AppCompatActivity {
                 });*/
 
                 return null;
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
+
+
         }
     }
     class CustomMessageAdapter extends BaseAdapter{

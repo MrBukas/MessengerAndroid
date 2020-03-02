@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class FrontPage extends AppCompatActivity {
-    private static Socket socket;
+    //private static Socket socket;
     static String[] usernames;
     static ListView listView;
     static ArrayAdapter<String> arrayAdapter;
@@ -46,9 +46,23 @@ public class FrontPage extends AppCompatActivity {
         final String password = i.getStringExtra("password");
         new AsyncCaller(username,password).execute();
     }
+//    @Override
+//    public void onBackPressed() {
+//        super.onBackPressed();
+//        Toast.makeText(FrontPage.this,"There is no back action",Toast.LENGTH_LONG).show();
+//        try {
+//            User.socket.close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        //FrontPage.this.finish();
+//       // return;
+//    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //socket = MainActivity.socket;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_front_page);
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -151,49 +165,43 @@ public class FrontPage extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Void... voids)  {
-            try {
-                toastHandler.obtainMessage(1,"Start");
-                socket = new Socket(getResources().getString(R.string.server_ip),5679);
-                PrintWriter printWriter = new PrintWriter(socket.getOutputStream(),true);
-                InputStreamReader inputStreamReader = new InputStreamReader(socket.getInputStream());
-                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-                Scanner scanner = new Scanner(bufferedReader);
-                printWriter.println(username);
-                printWriter.println((password));
-                int auth = Integer.parseInt(scanner.nextLine());//Сообщает о результате авторизации
-                printWriter.println("talkedUsers");
-                int amountOfUsers = Integer.parseInt(scanner.nextLine());
-                List<Talker> talkers = new ArrayList<>();
-                for (int i = 0; i < amountOfUsers; i++) {
-                    talkers.add(new Talker(Integer.parseInt(scanner.nextLine()),scanner.nextLine()));
-                }
-                System.out.println(talkers);
-                usernames = new String[talkers.size()];
-                for (int i = 0; i <talkers.size() ; i++) {
-                    usernames[i] = talkers.get(i).username;
-                }
-                arrayAdapter = new ArrayAdapter<String>(FrontPage.this,android.R.layout.simple_list_item_1,usernames);
-                //listView = findViewById(R.id.listView);
 
-                runOnUiThread(new Runnable() {
-
-                    @Override
-                    public void run() {
-
-                        listView.setAdapter(arrayAdapter);
-
-                    }
-                });
-
-
-
-
-
-
-
-            } catch (IOException e) {
-                e.printStackTrace();
+            toastHandler.obtainMessage(1,"Start");
+            // socket = new Socket(getResources().getString(R.string.server_ip),5679);
+            //PrintWriter printWriter = new PrintWriter(socket.getOutputStream(),true);
+            //InputStreamReader inputStreamReader = new InputStreamReader(socket.getInputStream());
+            //BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+            //Scanner scanner = new Scanner(bufferedReader);
+            //printWriter.println(username);
+            //printWriter.println((password));
+            //int auth = Integer.parseInt(scanner.nextLine());//Сообщает о результате авторизации
+            User.write("talkedUsers");
+            int amountOfUsers = Integer.parseInt(User.read());
+            List<Talker> talkers = new ArrayList<>();
+            for (int i = 0; i < amountOfUsers; i++) {
+                talkers.add(new Talker(Integer.parseInt(User.read()),User.read()));
             }
+            System.out.println(talkers);
+            usernames = new String[talkers.size()];
+            for (int i = 0; i <talkers.size() ; i++) {
+                usernames[i] = talkers.get(i).username;
+            }
+            arrayAdapter = new ArrayAdapter<String>(FrontPage.this,android.R.layout.simple_list_item_1,usernames);
+            //listView = findViewById(R.id.listView);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    listView.setAdapter(arrayAdapter);
+                }
+            });
+
+
+
+
+
+
+
+
             return null;
         }
     }

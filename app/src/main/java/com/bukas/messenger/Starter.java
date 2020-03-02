@@ -1,28 +1,18 @@
 package com.bukas.messenger;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Toast;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.net.Socket;
@@ -31,75 +21,44 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
-public class MainActivity extends AppCompatActivity {
-
-   // public static Socket socket;
-
+public class Starter extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        System.out.println("create");
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        setContentView(R.layout.activity_starter);
 
-        Button button_login  = findViewById(R.id.button_login);
-        Button button_register = findViewById(R.id.button_register);
-        final EditText edittext_username = findViewById(R.id.editText_username);
-        final EditText edittext_pass = findViewById(R.id.editText_password);
-        List<String> username_password = loadData();
 
-        edittext_username.setText(username_password.get(0));
-        edittext_pass.setText(username_password.get(1));
-
-        if (!edittext_username.getText().toString().equals("Name")) {
-            //Попытка войти с прошлым паролем
-            login(edittext_username.getText().toString(), edittext_pass.getText().toString());
+        if (User.socket != null){
+            startActivity( new Intent(Starter.this, FrontPage.class));
+        }else {
+            List<String> username_password = loadData();
+            login(username_password.get(0),username_password.get(1));
         }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Starter.this.finish();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        System.out.println("RESUME");
+        System.out.println("RESUME");
 
 
-        button_login.setOnClickListener(new View.OnClickListener() {
-           @Override
-           public void onClick(View view) {
-               login(edittext_username.getText().toString(),edittext_pass.getText().toString());
-           }
-        });
-
-        button_register.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, Registration.class));
-            }
-        });
 
 
     }
 
+    void login(String username, String password){
+        new AsyncCaller(username, password).execute();
+        //Toast.makeText(getApplicationContext(),"Sent",Toast.LENGTH_SHORT).show();
 
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
     public List<String> loadData(){
         List<String> login_password = new ArrayList<>();
@@ -109,12 +68,6 @@ public class MainActivity extends AppCompatActivity {
         login_password.add(values.getString("Password",""));
         return login_password;
     }
-    void login(String username, String password){
-       new AsyncCaller(username, password).execute();
-        //Toast.makeText(getApplicationContext(),"Sent",Toast.LENGTH_SHORT).show();
-
-    }
-
     class AsyncCaller extends AsyncTask<Void, Void, Void> implements Serializable
     {
         String username;
@@ -125,13 +78,13 @@ public class MainActivity extends AppCompatActivity {
             this.password = password;
         }
         Handler toastHandler = new Handler(Looper.getMainLooper()) {
-        @Override
-        public void handleMessage(Message message) {
-            // This is where you do your work in the UI thread.
-            // Your worker tells you in the message what to do.
-            Toast.makeText(getApplicationContext(),message.obj.toString(),Toast.LENGTH_SHORT).show();
-        }
-    };
+            @Override
+            public void handleMessage(Message message) {
+                // This is where you do your work in the UI thread.
+                // Your worker tells you in the message what to do.
+                Toast.makeText(getApplicationContext(),message.obj.toString(),Toast.LENGTH_SHORT).show();
+            }
+        };
         String hashPassword(String password){
             MessageDigest md = null;
             try {
@@ -168,27 +121,33 @@ public class MainActivity extends AppCompatActivity {
 
                 //PrintWriter printWriter = new PrintWriter(socket.getOutputStream(),true);
                 //InputStreamReader inputStreamReader = new InputStreamReader(socket.getInputStream());
-                  //  BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-               // Scanner scanner = new Scanner(bufferedReader);
+                //  BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                // Scanner scanner = new Scanner(bufferedReader);
 
                 //printWriter.println("login");
+                int auth;
+
                 User.write("login");
                 User.write(username);
                 User.write(hashPassword(password));
-                int auth = Integer.parseInt(User.read());
+                auth = Integer.parseInt(User.read());
+
                 switch (auth){
                     case 0:
                         toastHandler.obtainMessage(1,"Logged in").sendToTarget();
                         saveData(username,password);
                         //socket.close();
-                        Intent intent = new Intent(MainActivity.this, FrontPage.class);
+                        Intent intent = new Intent(Starter.this, FrontPage.class);
                         intent.putExtra("username",username);
                         intent.putExtra("password",hashPassword(password));
                         //MainActivity.this.finish();
                         startActivity(intent);
+                        //onDestroy();
                         break;
                     case 1:
                         toastHandler.obtainMessage(1,"Wrong").sendToTarget();
+                        startActivity(new Intent(Starter.this,MainActivity.class));
+                        //onDestroy();
                         break;
                 }
 
@@ -199,6 +158,4 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
     }
-
 }
-
