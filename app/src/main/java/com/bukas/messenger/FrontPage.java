@@ -22,14 +22,8 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class FrontPage extends AppCompatActivity {
     //private static Socket socket;
@@ -44,7 +38,7 @@ public class FrontPage extends AppCompatActivity {
         Intent i = getIntent();
         final String username = i.getStringExtra("username");
         final String password = i.getStringExtra("password");
-        new AsyncCaller(username,password).execute();
+        new AsyncGetTalkers(username,password).execute();
     }
 //    @Override
 //    public void onBackPressed() {
@@ -70,7 +64,7 @@ public class FrontPage extends AppCompatActivity {
         Intent i = getIntent();
         final String username = i.getStringExtra("username");
         final String password = i.getStringExtra("password");
-        new AsyncCaller(username,password).execute();
+        new AsyncGetTalkers(username,password).execute();
 
         usernames = new String[]{"asd","asdd"};
         ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,usernames);
@@ -97,11 +91,9 @@ public class FrontPage extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 talkerName = input.getText().toString();
-                Intent intent = new Intent(FrontPage.this,Chat.class);
-                intent.putExtra("username",username);
-                intent.putExtra("password",password);
-                intent.putExtra("talkerName",talkerName);
-                startActivity(intent);
+                //Toast.makeText(FrontPage.this,"sad",Toast.LENGTH_SHORT).show();
+                new AsyncNewDialog(talkerName).execute();
+
             }
         });
         adBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -129,14 +121,14 @@ public class FrontPage extends AppCompatActivity {
     }
 
 
-    class AsyncCaller extends AsyncTask<Void, Void, Void>
+    class AsyncGetTalkers extends AsyncTask<Void, Void, Void>
     {
         String username;
         String password;
 
 
 
-        public AsyncCaller(String username, String password) {
+        public AsyncGetTalkers(String username, String password) {
             this.username = username;
             this.password = password;
             //makeToast(username+password);
@@ -214,6 +206,45 @@ public class FrontPage extends AppCompatActivity {
             this.username = username;
         }
 
+    }
+    class AsyncNewDialog extends AsyncTask<Void, Void, Void>
+    {
+
+
+        String talkerName;
+        public AsyncNewDialog(String talkerName) {
+            this.talkerName = talkerName;
+        }
+
+        Handler toastHandler = new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(Message message) {
+                // This is where you do your work in the UI thread.
+                // Your worker tells you in the message what to do.
+                Toast.makeText(getApplicationContext(),message.obj.toString(),Toast.LENGTH_SHORT).show();
+            }
+        };
+
+        @Override
+        protected Void doInBackground(Void... voids)  {
+
+            toastHandler.obtainMessage(1,"Start");
+            User.write("isUserExists");
+            User.write(talkerName);
+            int id = Integer.parseInt(User.read());
+            if (id != -1){
+                Intent intent = new Intent(FrontPage.this,Chat.class);
+                intent.putExtra("talkerName",talkerName);
+                toastHandler.obtainMessage(1,"User found").sendToTarget();
+                startActivity(intent);
+            }else {
+                toastHandler.obtainMessage(1,"User not found").sendToTarget();
+            }
+
+
+
+            return null;
+        }
     }
 
 }

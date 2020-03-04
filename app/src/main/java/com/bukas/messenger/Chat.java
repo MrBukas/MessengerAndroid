@@ -54,8 +54,6 @@ public class Chat extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         Intent i = getIntent();
-        final String username = i.getStringExtra("username");
-        final String password = i.getStringExtra("password");
         talkerName = i.getStringExtra("talkerName");
         getSupportActionBar().setTitle(talkerName);
         messagesList = new ArrayList<>();
@@ -63,7 +61,7 @@ public class Chat extends AppCompatActivity {
 
 
 
-        new AsyncGetDialog(username,password).execute();
+        new AsyncGetDialog().execute();
 
         listViewMessage = findViewById(R.id.listViewMessage);
 
@@ -107,16 +105,7 @@ public class Chat extends AppCompatActivity {
     }
     class AsyncGetDialog extends AsyncTask<Void, Void, Void>
     {
-        String username;
-        String password;
 
-
-
-        public AsyncGetDialog(String username, String password) {
-            this.username = username;
-            this.password = password;
-            //makeToast(username+password);
-        }
         void makeToast(String s){
             Toast.makeText(getApplicationContext(),s,Toast.LENGTH_SHORT).show();
         }

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_settings">Настройки</string>
+    <string name="title_activity_registration">Регистрация</string>
+    <string name="login">Войти</string>
+</resources>

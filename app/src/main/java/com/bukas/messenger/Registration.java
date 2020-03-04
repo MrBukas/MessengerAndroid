@@ -44,9 +44,14 @@ public class Registration extends AppCompatActivity {
         button_register.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                new AsyncRegister(edittext_username.getText().toString(),edittext_pass.getText().toString()).execute();
             }
         });
+    }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Registration.this.finish();
     }
 
     class AsyncRegister extends AsyncTask<Void, Void, Void> implements Serializable
@@ -96,14 +101,13 @@ public class Registration extends AppCompatActivity {
         protected Void doInBackground(Void... voids)  {
             try {
                 Socket socket = new Socket(getResources().getString(R.string.server_ip),5679);
-                PrintWriter printWriter = new PrintWriter(socket.getOutputStream(),true);
-                InputStreamReader inputStreamReader = new InputStreamReader(socket.getInputStream());
-                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-                Scanner scanner = new Scanner(bufferedReader);
-                printWriter.println("reg");
-                printWriter.println(username);
-                printWriter.println(hashPassword(password));
-                int reg = Integer.parseInt(scanner.nextLine());
+                User.socket.close();
+                new User(socket);
+
+                User.write("reg");
+                User.write(username);
+                User.write(hashPassword(password));
+                int reg = Integer.parseInt(User.read());
                 switch (reg){
                     case 0:
                         toastHandler.obtainMessage(1,"Registered").sendToTarget();
